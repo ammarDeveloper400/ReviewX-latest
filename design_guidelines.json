@@ -1,0 +1,149 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "project_context": {
+    "app_name": "Employee Review System",
+    "type": "Internal Admin Dashboard",
+    "target_audience": "Professionals (25-45), HR, Managers",
+    "emotional_tone": "Professional, Objective, Trustworthy, Clear",
+    "theme_preference": "Light Mode (Default) - Clean & Corporate"
+  },
+  "typography": {
+    "fonts": {
+      "heading": "Manrope",
+      "body": "Inter"
+    },
+    "weights": {
+      "heading": "font-semibold or font-bold",
+      "body": "font-normal or font-medium"
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl tracking-tight",
+      "h2": "text-3xl tracking-tight",
+      "h3": "text-2xl font-semibold",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed",
+      "caption": "text-sm text-muted-foreground"
+    },
+    "rules": [
+      "Use tight tracking for headings (tracking-tight)",
+      "Use relaxed leading for body text",
+      "Avoid Inter for main headings; use Manrope for character"
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Deep Indigo",
+        "hex": "#1e1b4b",
+        "tailwind": "bg-indigo-950 text-white"
+      },
+      "secondary": {
+        "name": "Slate",
+        "hex": "#64748b",
+        "tailwind": "text-slate-500"
+      },
+      "accent": {
+        "name": "Teal",
+        "hex": "#0d9488",
+        "tailwind": "text-teal-600 bg-teal-50"
+      },
+      "danger": {
+        "name": "Rose",
+        "hex": "#e11d48",
+        "tailwind": "text-rose-600 bg-rose-50"
+      },
+      "success": {
+        "name": "Emerald",
+        "hex": "#059669",
+        "tailwind": "text-emerald-600 bg-emerald-50"
+      },
+      "background": {
+        "main": "#f8fafc",
+        "card": "#ffffff"
+      }
+    },
+    "usage": {
+      "dashboard_bg": "bg-slate-50",
+      "card_bg": "bg-white",
+      "sidebar_bg": "bg-white border-r border-slate-200",
+      "text_primary": "text-slate-900",
+      "text_secondary": "text-slate-500"
+    }
+  },
+  "layout_strategy": {
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-12",
+      "section_gap": "gap-8",
+      "item_gap": "gap-4"
+    },
+    "grid_system": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+      "form": "grid grid-cols-1 md:grid-cols-2 gap-6",
+      "card_grid": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+    },
+    "bento_grid": {
+      "mode": "Mode B (High Density)",
+      "rules": [
+        "Use col-span-2 for primary charts",
+        "Use col-span-1 for summary metrics",
+        "Ensure full height (h-full) for all children to avoid jagged bottoms"
+      ]
+    }
+  },
+  "components": {
+    "library": "shadcn/ui",
+    "customization_rules": [
+      "Cards: Use 'rounded-xl' and 'shadow-sm' (subtle). Avoid heavy drop shadows.",
+      "Buttons: Use 'rounded-lg' (slightly softer than default). Primary buttons should be Indigo-950.",
+      "Inputs: 'bg-slate-50' for input fields to differentiate from card background.",
+      "Tables: Clean, minimal borders. Header text should be 'text-xs uppercase tracking-wider text-slate-500'.",
+      "Badges: Use soft backgrounds (bg-opacity-10) with strong text colors for status indicators."
+    ],
+    "specific_components": {
+      "toast": "Use 'sonner' for notifications",
+      "date_picker": "Use shadcn Calendar component",
+      "dropdown": "Use shadcn DropdownMenu",
+      "charts": "Use Recharts (via shadcn/charts) for performance trends"
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "category": "User Avatar",
+        "url": "https://images.unsplash.com/photo-1615843423179-bea071facf96?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Professional male avatar"
+      },
+      {
+        "category": "User Avatar",
+        "url": "https://images.pexels.com/photos/4565706/pexels-photo-4565706.jpeg",
+        "description": "Professional female avatar"
+      },
+      {
+        "category": "User Avatar",
+        "url": "https://images.unsplash.com/photo-1650913406617-bd9b0ab07d07?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Casual professional avatar"
+      }
+    ],
+    "icons": "Use lucide-react (default) or @phosphor-icons/react for a more polished look if needed."
+  },
+  "universal_guidelines": [
+    "Avoid 'AI Slop': Do not use generic centered layouts or default blue gradients.",
+    "Micro-interactions: Add hover states to all interactive elements (e.g., table rows, cards).",
+    "Accessibility: Ensure text contrast ratio is at least 4.5:1. Use data-testid for all interactive elements.",
+    "Data Visualization: Charts must be clean and labeled. Don't rely on color alone.",
+    "Feedback: Use Toasts for success/error messages. Do not use native alerts.",
+    "Empty States: Always design empty states for tables/lists (e.g., 'No reviews found')."
+  ],
+  "instructions_to_main_agent": "Implement the dashboard using a Sidebar Layout. The main content area should use a light gray background (bg-slate-50) to make the white cards pop. Use the 'Manrope' font for all headings to give it a distinct personality. Ensure the 'Warning' system uses the defined Danger colors clearly but professionally."
+}

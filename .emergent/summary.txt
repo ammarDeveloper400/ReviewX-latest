@@ -1,0 +1,193 @@
+<analysis>**original_problem_statement:**
+The user has requested three major enhancements to the Employee Review System, along with a final cleanup of the recent backend migration.
+
+**A) PM My Reviews Flow:**
+*   **Problem:** PMs cannot view reviews about themselves.
+*   **Requirement:**
+    *   Only Admins can create reviews for PM-role employees. Self-reviews or PM-to-PM reviews must be blocked.
+    *   A new My Reviews page in the PM portal should display the PM's own reviews in a read-only format, similar to the employee view (hiding reviewer identity).
+    *   PMs must be blocked from editing/deleting/publishing reviews about themselves.
+
+**B) Multi-Admin Support:**
+*   **Requirement:**
+    *   Implement an Admin Users Management page where Admins can create other Admin users.
+    *   Admins should be able to activate/deactivate other Admins. Deactivated Admins cannot log in.
+    *   Admin creation and status changes must be audited.
+
+**C) Annual Anniversary-Based Bonus Calculation:**
+*   **Problem:** The current bonus calculation is monthly, which is incorrect.
+*   **Requirement:**
+    *   Revise the bonus to be calculated annually, on the anniversary of the employee's joining date.
+    *   The bonus will be based on the average score of all published monthly final reviews over the preceding 12 months.
+    *   Handle cases with fewer than 12 reviews.
+    *   Update the Salary Payable UI to reflect this annual model, showing bonus periods, average scores, and months counted.
+
+**Additional Cleanup Instructions:**
+*   Completely remove all remnants of the old Python/FastAPI backend and MongoDB dependencies. This includes files, folders (), configurations, and documentation.
+*   Clear all existing review data from the database, but retain categories and bonus ranges.
+
+**User's preferred language**: English
+
+**what currently exists?**
+The application's backend has been successfully migrated from FastAPI/MongoDB to **Laravel/MySQL**. The new Laravel backend resides in  and is fully functional, with all previous API endpoints re-implemented. The React frontend has been updated to correctly parse numeric data from the new backend and is working as expected.
+
+The agent has already started implementing the new features by:
+*   Creating database migrations and models for .
+*   Updating Laravel controllers (, , ) to enforce the new PM review restrictions and add multi-admin creation logic.
+*   Adding new API routes for the features.
+*   Creating placeholder frontend pages:  and .
+
+The old FastAPI backend in  still exists and needs to be removed.
+
+**Last working item**:
+-   **Last item agent was working:** The agent was in the process of creating the frontend pages required for the new features. It had just created  and was about to create the page for the annual bonus payable module.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** both
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1:** The user requested to *revise* the existing  page for the new annual bonus model. The agent's plan involved creating a new page instead. This needs to be reconciled. The next agent should modify the existing  instead of creating a new one. (Priority: P0)
+
+    **Issues Detail**:
+    -   **Issue 1**: Mismatch between user request (revise existing page) and agent plan (create new page).
+        -   **Attempted fixes:** Agent was about to create a new file .
+        -   **Next debug checklist**:
+            1.  Do not create a new page for the annual bonus.
+            2.  View the contents of .
+            3.  Modify the page to implement the new annual, anniversary-based bonus calculation and display logic as per the user's requirements.
+        -   **Why fix this issue and what will be achieved with the fix?** To align with the user's explicit request and avoid creating redundant UI components.
+        -   **Status**: NOT STARTED
+        -   **Is recurring issue?** N
+        -   **Should Test frontend/backend/both after fix?** both
+
+**In progress Task List**:
+-   **Task 1:** Complete frontend implementation for new features. (Priority: P0)
+
+    **Task Detail**:
+    -   **Task 1**:
+        -   **Where to resume**:
+            1.  Implement the UI and logic for .
+            2.  Implement the UI and logic for .
+            3.  Modify  to support the new annual bonus model (see Issue 1).
+            4.  Update  to add navigation links to My Reviews for PMs and Admin Management for Admins.
+        -   **What will be achieved with this?** The frontend will be updated to support the new backend functionalities.
+        -   **Status**: IN PROGRESS
+        -   **Should Test frontend/backend/both after fix?** both
+        -   **Blocked on something**: None
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks:**
+    *   **P0: Clean up Old Backend:** Completely delete the  directory and all other Python/MongoDB-related files (, old test files in , etc.). Update the main  to remove any setup instructions related to Python.
+    *   **P1: Clear Data and Re-seed:** Use the  method created in the  to wipe all review-related data, then run the full seeder to populate the database with fresh test data that adheres to the new rules.
+    *   **P1: Full QA Pass:** Perform end-to-end testing of all the new features (PM My Reviews, multi-admin, annual bonus calculation) and run a regression test on core application flows.
+
+-   **Future Tasks:**
+    *   Implement export functionality (CSV/PDF) for reports.
+    *   Build an advanced analytics dashboard.
+    *   Add dark mode support to the UI.
+
+**Completed work in this session**
+-   **Full Backend Migration:** Successfully migrated the entire backend from **FastAPI + MongoDB** to **Laravel + MySQL**.
+-   **Created New Laravel Backend:** Set up a complete Laravel project in  with all database migrations, models, controllers, and JWT-based authentication with RBAC.
+-   **Re-implemented All APIs:** Ported every API endpoint from the old backend to the new Laravel backend, ensuring the API contract remained consistent.
+-   **Created Database Seeder:** Built a comprehensive seeder for the new MySQL database.
+-   **Fixed Frontend Compatibility:** Resolved an issue where numeric values from Laravel were treated as strings in React by adding .
+-   **Validated Migration:** Verified that the frontend application works seamlessly with the new Laravel backend.
+    -   Passed a full suite of 31 backend tests via the testing agent.
+-   **Began New Feature Implementation:** Started work on the PM Reviews, Multi-Admin, and Annual Bonus features by creating the necessary backend routes, controller logic, models, and migrations.
+
+**Earlier issues found/mentioned but not fixed**
+None.
+
+**Known issue recurrence from previous fork**
+-   Issue recurrence in previous fork: None
+-   Recurrence count: 0
+-   Status: RESOLVED
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** PHP, Laravel, MySQL, Eloquent ORM, JWT for auth.
+-   **Frontend:** React, React Router, , Tailwind CSS, Shadcn UI.
+-   **Architecture:** Monolithic REST API (Laravel) with a SPA frontend (React).
+-   **Key Logic:** Role-Based Access Control (RBAC) is implemented via Laravel middleware. The application now supports a complex review lifecycle, user/employee management, and an annual bonus calculation system.
+
+**key DB schema**
+-   **users**: id, name, email, password, role, is_active
+-   **employees**: id, user_id, employee_id, name, join_date, work_role, status
+-   **categories**: id, title, criteria_text, is_enabled
+-   **internal_reviews**: id, employee_id, reviewer_user_id, month, year, status, items (JSON)
+-   **monthly_final_reviews**: id, employee_id, month, year, status, monthly_score, items (JSON)
+-   **bonus_brackets**: id, min_score, max_score, multiplier, label
+-   **annual_bonus_payables**: id, employee_id, period_start, period_end, months_counted, avg_score, multiplier, amount, status
+-   **audit_logs**: id, user_id, action, subject_type, subject_id, data (JSON)
+
+**changes in tech stack**
+-   **Backend:** FastAPI (Python) -> **Laravel (PHP)**
+-   **Database:** MongoDB -> **MySQL (MariaDB)**
+
+**All files of reference**
+-   **/app/backend-laravel/**: The entire new backend codebase.
+-   **/app/frontend/src/pages/PMMyReviewsPage.js**: New page for PMs to see their own reviews.
+-   **/app/frontend/src/pages/AdminManagementPage.js**: New page for Admins to manage other Admins.
+-   **/app/frontend/src/pages/SalaryPayablePage.js**: To be modified for the new annual bonus model.
+-   **/app/backend-laravel/routes/api.php**: Contains all new and existing API endpoints.
+-   **/app/backend-laravel/app/Http/Controllers/AnnualBonusController.php**: New controller for bonus logic.
+-   **/app/backend-laravel/app/Http/Controllers/SeedController.php**: Contains  and  methods.
+
+**Areas that need refactoring**:
+-   **Code Cleanup:** The entire  directory, along with any associated Python virtual environments, , and Python-specific test files, are now obsolete and must be deleted.
+
+**key api endpoints**
+-   : New endpoint to create an Admin user.
+-   : New endpoint for a PM to fetch their own reviews.
+-   : New endpoint to trigger annual bonus calculation.
+-   : New endpoint to fetch annual bonus payables.
+-   : New endpoint to clear only review-related data.
+
+**Critical Info for New Agent**
+-   The immediate priority is to finish the frontend implementation for the three requested features (PM Reviews, Multi-Admin, Annual Bonus).
+-   **Crucially, modify the existing  for the annual bonus UI; do not create a new page.**
+-   The Laravel backend is NOT managed by the default supervisor configuration. It is started manually using a script: . Ensure this process remains running.
+-   Once the feature implementation is complete and tested, you **must** perform the cleanup task of deleting the old  directory and all other Python/MongoDB artifacts. This is a mandatory part of the user's request.
+
+**documents and test reports created in this job**
+-   
+-   
+-    (Updated after migration)
+-    (Updated after migration)
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+-   The user provided a large, multi-part feature request (Message 293) after the agent completed the backend migration. The request includes:
+    1.  A My Reviews flow for PMs.
+    2.  Multi-admin creation capabilities.
+    3.  A shift from monthly to annual, anniversary-based bonus calculations.
+    4.  A mandatory cleanup of all old Python/MongoDB code.
+-   The agent acknowledged the request and has begun implementation, starting with the backend changes and creating placeholder frontend files. The work is in progress.
+
+**Project Health Check:**
+-   **Broken:**
+    -   The new features (PM My Reviews, Multi-Admin, Annual Bonus) are not yet complete.
+-   **Mocked:** None.
+
+**3rd Party Integrations**
+-   : Used for JWT authentication in the Laravel backend.
+
+**Testing status**
+-   **Testing agent used after significant changes:** YES, after the FastAPI to Laravel migration. All 31 backend tests passed.
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:**
+    -   The testing agent created temporary test files during its run, but no permanent test files like  were committed by the main agent.
+-   **Known regressions:** None.
+
+**Credentials to test flow:**
+-   **Admin:**  / 
+-   **PM/Reviewer:**  / 
+-   **Employee:**  / 
+
+**What agent forgot to execute**
+-   The agent is in the middle of executing a large task. The primary pending items are completing the frontend implementation and, critically, removing the old Python backend code as explicitly requested by the user.
+-   The agent was about to create a new page for the annual bonus feature, deviating from the user's request to revise the existing . This needs to be corrected.</analysis>
