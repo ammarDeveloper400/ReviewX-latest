@@ -448,6 +448,7 @@ const CreateInternalReviewPage = () => {
                           </SelectTrigger>
                           <SelectContent>
                             {[
+                              new Date().getFullYear() - 1,
                               new Date().getFullYear(),
                               new Date().getFullYear() + 1,
                             ].map((year) => (

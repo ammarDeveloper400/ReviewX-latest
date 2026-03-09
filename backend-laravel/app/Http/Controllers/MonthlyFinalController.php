@@ -157,16 +157,16 @@ public function show(string $final_id)
         }
         
           // Also include evidence from included_evidence array for this category
-        if (!empty($monthlyFinal->included_evidence)) {
-            foreach ($monthlyFinal->included_evidence as $includedEvidence) {
-                if (isset($includedEvidence['category_id']) && $includedEvidence['category_id'] == $catId) {
-                    $categoryDetails[$catId]['evidence'][] = [
-                        'evidence_url' => $includedEvidence['evidence_url'] ?? null,
-                        // 'evidence_note' => $includedEvidence['evidence_note'] ?? null,
-                    ];
-                }
-            }
-        }
+        // if (!empty($monthlyFinal->included_evidence)) {
+        //     foreach ($monthlyFinal->included_evidence as $includedEvidence) {
+        //         if (isset($includedEvidence['category_id']) && $includedEvidence['category_id'] == $catId) {
+        //             $categoryDetails[$catId]['evidence'][] = [
+        //                 'evidence_url' => $includedEvidence['evidence_url'] ?? null,
+        //                 // 'evidence_note' => $includedEvidence['evidence_note'] ?? null,
+        //             ];
+        //         }
+        //     }
+        // }
     }
 
     // Use general_feedback from monthly_final directly

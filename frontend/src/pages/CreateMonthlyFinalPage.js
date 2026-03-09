@@ -35,6 +35,7 @@ import {
   Users,
   AlertCircle,
   InfoIcon,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -218,6 +219,13 @@ const CreateMonthlyFinalPage = () => {
           included_evidence: prev.included_evidence.filter(
             (_, i) => i !== existingIndex,
           ),
+          category_ratings: {
+            ...prev.category_ratings,
+            [catId]: {
+              ...prev.category_ratings[catId],
+              evidence_url: "",
+            },
+          },
         };
       } else {
         return {
@@ -226,6 +234,13 @@ const CreateMonthlyFinalPage = () => {
             ...prev.included_evidence,
             { ...evidenceItem, category_id: catId },
           ],
+          category_ratings: {
+            ...prev.category_ratings,
+            [catId]: {
+              ...prev.category_ratings[catId],
+              evidence_url: evidenceItem.evidence_url || prev.category_ratings[catId]?.evidence_url || "",
+            },
+          },
         };
       }
     });
@@ -383,9 +398,12 @@ const CreateMonthlyFinalPage = () => {
   };
 
   return (
-    <div className="flex" data-testid="create-monthly-final-page">
+    <div
+      className="flex h-screen overflow-hidden"
+      data-testid="create-monthly-final-page"
+    >
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto">
         <div className="p-8">
           <Button
             variant="ghost"
@@ -482,7 +500,11 @@ const CreateMonthlyFinalPage = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {[2024, 2025, 2026].map((year) => (
+                          {[
+                            new Date().getFullYear() - 1,
+                            new Date().getFullYear(),
+                            new Date().getFullYear() + 1,
+                          ].map((year) => (
                             <SelectItem key={year} value={year.toString()}>
                               {year}
                             </SelectItem>
@@ -598,42 +620,71 @@ const CreateMonthlyFinalPage = () => {
                         <Label
                           className={needsEvidence ? "text-amber-800" : ""}
                         >
-                          Evidence Note{" "}
+                          Evidence{" "}
                           {needsEvidence && (
                             <span className="text-rose-600">
                               * (Required for rating &lt; 3)
                             </span>
                           )}
                         </Label>
-                        <Textarea
-                          value={rating.evidence_note || ""}
-                          onChange={(e) =>
-                            handleCategoryRatingChange(
-                              category.id,
-                              "evidence_note",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="Provide supporting evidence..."
-                          className={`mt-1 ${needsEvidence ? "border-amber-300" : "bg-slate-50"}`}
-                          rows={2}
-                        />
-
                         <div className="mt-2">
-                          <Label>Evidence URL (optional)</Label>
-                          <Input
-                            value={rating.evidence_url || ""}
+                          <Label className="text-sm">Evidence Note</Label>
+                          <Textarea
+                            value={rating.evidence_note || ""}
                             onChange={(e) =>
                               handleCategoryRatingChange(
                                 category.id,
-                                "evidence_url",
+                                "evidence_note",
                                 e.target.value,
                               )
                             }
-                            placeholder="https://..."
-                            className="mt-1 bg-slate-50"
+                            placeholder="Add your own evidence note..."
+                            className={`mt-1 ${needsEvidence ? "border-amber-300" : "bg-slate-50"}`}
+                            rows={2}
                           />
                         </div>
+
+                        {formData.included_evidence.filter(
+                          (e) => e.category_id === category.id,
+                        ).length > 0 && (
+                          <div className="mt-3">
+                            <Label className="text-sm">Selected Evidence Links</Label>
+                            <div className="mt-1 space-y-2">
+                              {formData.included_evidence
+                                .filter((e) => e.category_id === category.id)
+                                .map((ev, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-2"
+                                  >
+                                    <LinkIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <a
+                                        href={ev.evidence_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-blue-600 hover:underline truncate block"
+                                      >
+                                        {ev.evidence_url}
+                                      </a>
+                                      {ev.evidence_note && (
+                                        <p className="text-xs text-slate-400">Ref: {ev.evidence_note}</p>
+                                      )}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        toggleEvidenceSelection(category.id, ev)
+                                      }
+                                      className="text-slate-400 hover:text-rose-500 flex-shrink-0"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

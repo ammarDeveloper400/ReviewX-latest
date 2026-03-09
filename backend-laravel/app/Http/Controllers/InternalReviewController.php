@@ -287,11 +287,13 @@ class InternalReviewController extends Controller
             return response()->json(['detail' => 'Only Admin can create reviews for PM profiles'], 403);
         }
 
-        // Validate current month/year
-        $now = Carbon::now();
-        if ($request->review_cycle_year < $now->year || 
-            ($request->review_cycle_year == $now->year && $request->review_cycle_month < $now->month)) {
-            return response()->json(['detail' => 'Cannot create reviews for previous months/years'], 400);
+        // Validate current month/year (only restrict non-Admin users)
+        if (!$user->isAdmin()) {
+            $now = Carbon::now();
+            if ($request->review_cycle_year < $now->year || 
+                ($request->review_cycle_year == $now->year && $request->review_cycle_month < $now->month)) {
+                return response()->json(['detail' => 'Cannot create reviews for previous months/years'], 400);
+            }
         }
 
         // Validate evidence requirements
