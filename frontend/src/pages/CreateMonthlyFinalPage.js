@@ -584,6 +584,7 @@ const CreateMonthlyFinalPage = () => {
                               )
                             }
                             size="lg"
+                            step={0.1}
                           />
                           <span
                             className={`text-2xl font-bold ${getScoreColor(rating.rating)}`}

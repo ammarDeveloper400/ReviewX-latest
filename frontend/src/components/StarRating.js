@@ -135,15 +135,14 @@ const StarRating = ({
     if (readonly || !onChange) return;
     
     let newValue = normalizedValue;
-    
     switch (e.key) {
       case 'ArrowRight':
       case 'ArrowUp':
-        newValue = Math.min(5, normalizedValue + 0.5);
+        newValue = Math.min(5, Math.round((normalizedValue + 0.1) * 10) / 10);
         break;
       case 'ArrowLeft':
       case 'ArrowDown':
-        newValue = Math.max(0, normalizedValue - 0.5);
+        newValue = Math.max(0, Math.round((normalizedValue - 0.1) * 10) / 10);
         break;
       case 'Home':
         newValue = 0;
@@ -154,7 +153,6 @@ const StarRating = ({
       default:
         return;
     }
-    
     e.preventDefault();
     onChange(newValue);
   };

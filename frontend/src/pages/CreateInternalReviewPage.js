@@ -353,7 +353,7 @@ const CreateInternalReviewPage = () => {
   return (
     <div className="flex" data-testid="create-internal-review-page">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         <div className="p-8">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">
@@ -528,8 +528,8 @@ const CreateInternalReviewPage = () => {
                 </Card>
               </div>
 
-              <div className="space-y-6">
-                <Card className="sticky top-8" data-testid="preview-card">
+              <div className="lg:col-span-1 flex flex-col space-y-6">
+                <Card className="sticky top-8">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="w-5 h-5" />

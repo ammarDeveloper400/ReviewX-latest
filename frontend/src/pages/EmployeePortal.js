@@ -21,14 +21,17 @@ const EmployeePortal = () => {
   const [loading, setLoading] = useState(true);
   
   // Date range filter state
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear().toString();
+  const currentMonth = (currentDate.getMonth() + 1).toString();
   const [filterType, setFilterType] = useState('year'); // 'year' or 'custom'
-  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   
   // Custom range state - supports spanning multiple years
-  const [startMonth, setStartMonth] = useState('1');
-  const [startYear, setStartYear] = useState('2025');
-  const [endMonth, setEndMonth] = useState('12');
-  const [endYear, setEndYear] = useState('2025');
+  const [startMonth, setStartMonth] = useState(currentMonth);
+  const [startYear, setStartYear] = useState(currentYear);
+  const [endMonth, setEndMonth] = useState(currentMonth);
+  const [endYear, setEndYear] = useState(currentYear);
   
   // Generate year options (current year + last 5 years)
   const yearOptions = [2026, 2025, 2024, 2023, 2022, 2021];
