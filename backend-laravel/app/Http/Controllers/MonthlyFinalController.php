@@ -378,9 +378,7 @@ public function show(string $final_id)
             return response()->json(['detail' => 'Only Admin can publish monthly final reviews for PM profiles'], 403);
         }
 
-        if ($final->status === 'Published') {
-            return response()->json(['detail' => 'This review is already published'], 400);
-        }
+        // Allow republish: No restriction if already published
 
         // Calculate cumulative score
         $cumulativeScore = $this->calculateCumulativeScore($final->employee_id);

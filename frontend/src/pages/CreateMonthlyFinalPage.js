@@ -139,14 +139,45 @@ const CreateMonthlyFinalPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = response.data;
+      console.log('Fetched review data:', data);
       setExistingFinal(data);
 
+      // Convert category_details to category_ratings
+      let categoryRatings = {};
+      if (data.category_details) {
+        Object.values(data.category_details).forEach((cat) => {
+          categoryRatings[cat.category_id] = {
+            rating: cat.rating ?? 3,
+            comment: cat.comments && cat.comments.length > 0 ? cat.comments[0].comment : "",
+            evidence_url: cat.evidence && cat.evidence.length > 0 ? cat.evidence[0].evidence_url : null,
+            evidence_note: cat.evidence && cat.evidence.length > 0 ? cat.evidence[0].evidence_note : null,
+          };
+        });
+      }
+
+      // Parse general_feedback if array and stringified JSON
+      let generalFeedback = "";
+      if (Array.isArray(data.general_feedback) && data.general_feedback.length > 0) {
+        try {
+          const parsed = JSON.parse(data.general_feedback[0].feedback);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].feedback) {
+            generalFeedback = parsed[0].feedback;
+          } else if (typeof parsed === "string") {
+            generalFeedback = parsed;
+          }
+        } catch (e) {
+          generalFeedback = data.general_feedback[0].feedback || "";
+        }
+      } else if (typeof data.general_feedback === "string") {
+        generalFeedback = data.general_feedback;
+      }
+
       setFormData({
-        employee_id: data.employee_id || data.employee?.id,
+        employee_id: data.employee_id || (data.employee && data.employee.id),
         review_cycle_month: data.review_cycle_month,
         review_cycle_year: data.review_cycle_year,
-        general_feedback: data.general_feedback || "",
-        category_ratings: data.final_category_ratings || {},
+        general_feedback: generalFeedback,
+        category_ratings: categoryRatings,
         included_evidence: data.included_evidence || [],
       });
     } catch (error) {
@@ -261,6 +292,9 @@ const CreateMonthlyFinalPage = () => {
         await axios.put(
           `${API_URL}/monthly-finals/${finalId}`,
           {
+            employee_id: formData.employee_id,
+            review_cycle_month: formData.review_cycle_month,
+            review_cycle_year: formData.review_cycle_year,
             final_category_ratings: formData.category_ratings,
             general_feedback: formData.general_feedback,
             included_evidence: formData.included_evidence,
@@ -333,6 +367,9 @@ const CreateMonthlyFinalPage = () => {
         await axios.put(
           `${API_URL}/monthly-finals/${finalId}`,
           {
+            employee_id: formData.employee_id,
+            review_cycle_month: formData.review_cycle_month,
+            review_cycle_year: formData.review_cycle_year,
             final_category_ratings: formData.category_ratings,
             general_feedback: formData.general_feedback,
             included_evidence: formData.included_evidence,
@@ -366,7 +403,8 @@ const CreateMonthlyFinalPage = () => {
       toast.error("Please select an employee");
       return false;
     }
-    if (!formData.general_feedback.trim()) {
+    const generalFeedback = typeof formData.general_feedback === "string" ? formData.general_feedback : String(formData.general_feedback ?? "");
+    if (!generalFeedback.trim()) {
       toast.error("Please provide general feedback");
       return false;
     }
