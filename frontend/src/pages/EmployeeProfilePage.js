@@ -162,7 +162,7 @@ const EmployeeProfilePage = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-4xl font-bold text-indigo-950 mb-2">
-                  {(performance?.cumulative_score || 0).toFixed(2)}
+                  {(parseFloat(performance?.cumulative_score) || 0).toFixed(2)}
                 </div>
                 <StarRating value={performance?.cumulative_score || 0} readonly size="md" />
               </CardContent>
@@ -253,7 +253,7 @@ const EmployeeProfilePage = () => {
                           </div>
                           <div className="text-right">
                             <div className="text-3xl font-bold text-indigo-950">
-                              {(review.monthly_score || 0).toFixed(2)}
+                              {(parseFloat(review.monthly_score) || 0).toFixed(2)}
                             </div>
                             <StarRating value={review.monthly_score} readonly size="md" />
                           </div>
@@ -271,7 +271,7 @@ const EmployeeProfilePage = () => {
                             return (
                               <div key={catId} className="text-center p-2 bg-white rounded border border-slate-200">
                                 <p className="text-xs text-slate-500 mb-1">{category?.title || `Category ${idx + 1}`}</p>
-                                <p className="text-lg font-bold text-slate-900">{(rating || 0).toFixed(2)}</p>
+                                <p className="text-lg font-bold text-slate-900">{(parseFloat(rating) || 0).toFixed(2)}</p>
                               </div>
                             );
                           })}
