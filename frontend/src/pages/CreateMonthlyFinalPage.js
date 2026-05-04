@@ -36,8 +36,11 @@ import {
   AlertCircle,
   InfoIcon,
   X,
+  TrendingUp,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -52,6 +55,7 @@ const CreateMonthlyFinalPage = () => {
   const [loading, setLoading] = useState(false);
   const [loadingAggregated, setLoadingAggregated] = useState(false);
   const [aggregatedData, setAggregatedData] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const [formData, setFormData] = useState({
     employee_id: "",
@@ -85,6 +89,59 @@ const CreateMonthlyFinalPage = () => {
     formData.review_cycle_month,
     formData.review_cycle_year,
   ]);
+
+  // Calculate preview score
+  useEffect(() => {
+    calculatePreview();
+  }, [formData.category_ratings]);
+
+  const calculatePreview = () => {
+    const ratings = Object.values(formData.category_ratings).map(
+      (r) => r.rating || 0
+    );
+    if (ratings.length === 0) {
+      setPreview(null);
+      return;
+    }
+
+    const monthlyScore =
+      Math.round(
+        (ratings.reduce((sum, r) => sum + r, 0) / ratings.length) * 100
+      ) / 100;
+
+    // Determine bonus bracket based on score
+    let bonusBracket = "Below Expectations";
+    if (monthlyScore >= 4.5) bonusBracket = "Exceptional";
+    else if (monthlyScore >= 4.0) bonusBracket = "Exceeds Expectations";
+    else if (monthlyScore >= 3.5) bonusBracket = "Meets Expectations";
+    else if (monthlyScore >= 3.0) bonusBracket = "Satisfactory";
+
+    const warning = monthlyScore < 3.0;
+
+    setPreview({ monthlyScore, bonusBracket, warning });
+  };
+
+  const handleEvidenceUpload = async (e, categoryId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploadFormData = new FormData();
+    uploadFormData.append("file", file);
+
+    try {
+      const response = await axios.post(`${API_URL}/upload`, uploadFormData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      handleCategoryRatingChange(categoryId, "evidence_url", response.data.file_url);
+      toast.success("File uploaded successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to upload file");
+    }
+  };
 
   const fetchEmployees = async () => {
     try {
@@ -656,74 +713,93 @@ const CreateMonthlyFinalPage = () => {
                             : ""
                         }
                       >
-                        <Label
-                          className={needsEvidence ? "text-amber-800" : ""}
-                        >
-                          Evidence{" "}
+                        <div className="flex items-center justify-between mb-2">
+                          <Label
+                            className={needsEvidence ? "text-amber-800" : ""}
+                          >
+                            Evidence{" "}
+                            {needsEvidence && (
+                              <span className="text-rose-600">
+                                * (Required for rating &lt; 3)
+                              </span>
+                            )}
+                          </Label>
                           {needsEvidence && (
-                            <span className="text-rose-600">
-                              * (Required for rating &lt; 3)
-                            </span>
+                            <Badge variant="destructive" className="text-xs">
+                              Required (Rating &lt; 3)
+                            </Badge>
                           )}
-                        </Label>
-                        <div className="mt-2">
-                          <Label className="text-sm">Evidence Note</Label>
-                          <Textarea
-                            value={rating.evidence_note || ""}
-                            onChange={(e) =>
-                              handleCategoryRatingChange(
-                                category.id,
-                                "evidence_note",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="Add your own evidence note..."
-                            className={`mt-1 ${needsEvidence ? "border-amber-300" : "bg-slate-50"}`}
-                            rows={2}
-                          />
                         </div>
 
-                        {formData.included_evidence.filter(
-                          (e) => e.category_id === category.id,
-                        ).length > 0 && (
-                          <div className="mt-3">
-                            <Label className="text-sm">Selected Evidence Links</Label>
-                            <div className="mt-1 space-y-2">
-                              {formData.included_evidence
-                                .filter((e) => e.category_id === category.id)
-                                .map((ev, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-2"
-                                  >
-                                    <LinkIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                      <a
-                                        href={ev.evidence_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-blue-600 hover:underline truncate block"
-                                      >
-                                        {ev.evidence_url}
-                                      </a>
-                                      {ev.evidence_note && (
-                                        <p className="text-xs text-slate-400">Ref: {ev.evidence_note}</p>
-                                      )}
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        toggleEvidenceSelection(category.id, ev)
-                                      }
-                                      className="text-slate-400 hover:text-rose-500 flex-shrink-0"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ))}
-                            </div>
+                        <div className="mt-2 space-y-3">
+                          <div>
+                            <Label className="text-sm mb-1 flex items-center gap-2">
+                              <Upload className="w-4 h-4" />
+                              Upload File
+                            </Label>
+                            <Input
+                              type="file"
+                              accept=".jpg,.jpeg,.png,.webp,.pdf,.docx"
+                              onChange={(e) =>
+                                handleEvidenceUpload(e, category.id)
+                              }
+                              className="bg-slate-50 mt-1"
+                            />
+                            {rating.evidence_url && (
+                              <p className="text-xs text-emerald-600 mt-1">
+                                ✓ File uploaded
+                              </p>
+                            )}
                           </div>
-                        )}
+
+                          <div>
+                            <Label className="text-sm">Evidence Note</Label>
+                            <Textarea
+                              value={rating.evidence_note || ""}
+                              onChange={(e) =>
+                                handleCategoryRatingChange(
+                                  category.id,
+                                  "evidence_note",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="Add your own evidence note..."
+                              className={`mt-1 ${needsEvidence ? "border-amber-300" : "bg-slate-50"}`}
+                              rows={2}
+                            />
+                          </div>
+
+                          {rating.evidence_url && (
+                            <div className="bg-white border border-slate-200 rounded-lg p-3">
+                              <div className="flex items-center gap-2">
+                                <LinkIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <a
+                                    href={rating.evidence_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-blue-600 hover:underline truncate block"
+                                  >
+                                    {rating.evidence_url}
+                                  </a>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleCategoryRatingChange(
+                                      category.id,
+                                      "evidence_url",
+                                      null,
+                                    )
+                                  }
+                                  className="text-slate-400 hover:text-rose-500 flex-shrink-0"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -779,200 +855,68 @@ const CreateMonthlyFinalPage = () => {
               </div>
             </div>
 
-            {/* Right Side - Internal Reviews Reference Panel */}
-            <div className="lg:col-span-1 flex flex-col">
-              <Card className="sticky top-4">
-                <CardHeader className="flex-shrink-0">
+            {/* Right Side - Score Preview Panel */}
+            <div className="lg:col-span-1 flex flex-col space-y-6">
+              <Card className="sticky top-8">
+                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Internal Reviews Reference
+                    <TrendingUp className="w-5 h-5" />
+                    Score Preview
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {!formData.employee_id ? (
-                    <div className="text-center py-8 text-slate-500">
-                      <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                      <p>
-                        Select an employee and period to see internal reviews
-                      </p>
+                <CardContent className="space-y-4">
+                  <div className="text-center p-6 bg-slate-50 rounded-lg">
+                    <p className="text-sm text-slate-600 mb-2">
+                      Monthly Score (Estimated)
+                    </p>
+                    <p
+                      className={`text-5xl font-bold ${
+                        preview?.monthlyScore >= 3.1
+                          ? "text-emerald-600"
+                          : "text-rose-600"
+                      }`}
+                    >
+                      {preview?.monthlyScore || 0}
+                    </p>
+                    <div className="mt-3">
+                      <StarRating
+                        value={preview?.monthlyScore || 0}
+                        readonly
+                      />
                     </div>
-                  ) : loadingAggregated ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-950"></div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">
+                        Bonus Bracket
+                      </span>
+                      <Badge className="bg-teal-50 text-teal-700">
+                        {preview?.bonusBracket || "N/A"}
+                      </Badge>
                     </div>
-                  ) : !aggregatedData?.internal_reviews?.length ? (
-                    <div className="text-center py-8 text-slate-500">
-                      <AlertCircle className="w-12 h-12 mx-auto mb-3 text-amber-400" />
-                      <p>No internal reviews found for this period</p>
-                      <p className="text-sm mt-1">
-                        You can still create a final review
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {/* Summary */}
-                      <div className="bg-indigo-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-indigo-900">
-                          {aggregatedData.internal_reviews.length} Internal
-                          Review(s)
-                        </p>
-                        <p className="text-2xl font-bold text-indigo-600 mt-1">
-                          Avg: {aggregatedData.overall_avg_score}
-                        </p>
-                      </div>
 
-                      <Separator />
+                    {preview?.warning && (
+                      <Alert className="bg-rose-50 border-rose-200">
+                        <AlertCircle className="h-4 w-4 text-rose-600" />
+                        <AlertDescription className="text-rose-800 text-sm">
+                          ⚠️ This score will create a warning
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
-                      {/* Internal Reviews List */}
-                      {aggregatedData.internal_reviews.map((ir, idx) => (
-                        <div
-                          key={ir.id}
-                          className="border border-slate-200 rounded-lg p-3"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge variant="outline">Review #{idx + 1}</Badge>
-                            <span className="text-lg font-bold">
-                              {ir.avg_score}
-                            </span>
-                          </div>
-                          <p className="text-sm text-slate-600">
-                            By: {ir.reviewer_email}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            {new Date(ir.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      ))}
-
-                      <Separator />
-
-                      {/* Category Aggregated Data */}
-                      <div className="space-y-3">
-                        <p className="text-sm font-medium text-slate-700">
-                          Category Breakdown
-                        </p>
-                        {Object.entries(
-                          aggregatedData.aggregated_scores || {},
-                        ).map(([catId, data]) => (
-                          <div
-                            key={catId}
-                            className="bg-slate-50 p-3 rounded-lg"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium text-sm">
-                                {data.category_title}
-                              </span>
-                              <span
-                                className={`font-bold ${getScoreColor(data.avg_rating)}`}
-                              >
-                                {data.avg_rating}
-                              </span>
-                            </div>
-
-                            {/* Comments for this category */}
-                            {aggregatedData.all_comments?.[catId]?.length >
-                              0 && (
-                              <div className="mt-2">
-                                <p className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                  <MessageSquare className="w-3 h-3" /> Comments
-                                </p>
-                                {aggregatedData.all_comments[catId].map(
-                                  (c, i) => (
-                                    <div
-                                      key={i}
-                                      className="text-xs bg-white p-2 rounded mb-1"
-                                    >
-                                      <p className="text-slate-700">
-                                        {c.comment}
-                                      </p>
-                                      <p className="text-slate-400 mt-1">
-                                        - {c.reviewer_email}
-                                      </p>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            )}
-
-                            {/* Evidence for this category */}
-                            {aggregatedData.all_evidence?.[catId]?.length >
-                              0 && (
-                              <div className="mt-2">
-                                <p className="text-xs text-slate-500 mb-1 flex items-center gap-1">
-                                  <LinkIcon className="w-3 h-3" /> Evidence
-                                  (click to include)
-                                </p>
-                                {aggregatedData.all_evidence[catId].map(
-                                  (e, i) => (
-                                    <div
-                                      key={i}
-                                      className={`text-xs p-2 rounded mb-1 cursor-pointer transition-colors ${
-                                        isEvidenceSelected(
-                                          catId,
-                                          e.evidence_url,
-                                        )
-                                          ? "bg-emerald-100 border border-emerald-300"
-                                          : "bg-amber-50 hover:bg-amber-100"
-                                      }`}
-                                      onClick={() =>
-                                        toggleEvidenceSelection(catId, e)
-                                      }
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <Checkbox
-                                          checked={isEvidenceSelected(
-                                            catId,
-                                            e.evidence_url,
-                                          )}
-                                          className="h-3 w-3"
-                                        />
-                                        <p className="text-slate-700 flex-1">
-                                          {e.evidence_note}
-                                        </p>
-                                      </div>
-                                      {e.evidence_url && (
-                                        <p className="text-blue-600 truncate mt-1">
-                                          {e.evidence_url}
-                                        </p>
-                                      )}
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* General Feedback from Internals */}
-                      {aggregatedData.all_general_feedback?.length > 0 && (
-                        <>
-                          <Separator />
-                          <div>
-                            <p className="text-sm font-medium text-slate-700 mb-2">
-                              General Feedback from Internal Reviews
-                            </p>
-                            {aggregatedData.all_general_feedback.map((f, i) => (
-                              <div
-                                key={i}
-                                className="bg-slate-50 p-3 rounded-lg mb-2"
-                              >
-                                <p className="text-sm text-slate-700">
-                                  {f.feedback}
-                                </p>
-                                <p className="text-xs text-slate-400 mt-1">
-                                  - {f.reviewer_email}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <InfoIcon className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-800 text-sm">
+                        This is a monthly final review. Employee will see this
+                        based on publish status.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
                 </CardContent>
               </Card>
             </div>
+            {/* Right Side - Score Preview Panel End */}
           </div>
         </div>
       </div>

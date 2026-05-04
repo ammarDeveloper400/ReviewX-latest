@@ -32,19 +32,26 @@ const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const AdminDashboard = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [2028, 2027, 2026, 2025, 2024, 2023];
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [seedingData, setSeedingData] = useState(false);
   const [period, setPeriod] = useState("this_year");
-  const [selectedYear, setSelectedYear] = useState("2025");
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState(null);
-
-  const currentYear = new Date().getFullYear();
-  const yearOptions = [2026, 2025, 2024, 2023];
 
   useEffect(() => {
     fetchStats();
   }, [period, selectedYear, selectedMonth]);
+
+  // Clear selectedMonth when period changes to one that doesn't use it
+  useEffect(() => {
+    if (period !== "custom") {
+      setSelectedMonth(null);
+    }
+  }, [period]);
 
   const fetchStats = async () => {
     try {
@@ -54,10 +61,13 @@ const AdminDashboard = () => {
         if (selectedMonth) params.month = selectedMonth;
       }
 
+      console.log("Dashboard API params:", params, "selectedMonth:", selectedMonth);
+
       const response = await axios.get(`${API_URL}/dashboard/stats`, {
         headers: { Authorization: `Bearer ${token}` },
         params,
       });
+      console.log("Dashboard response:", response.data);
       setStats(response.data);
     } catch (error) {
       toast.error("Failed to load dashboard stats");
@@ -310,13 +320,32 @@ const AdminDashboard = () => {
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   Top Performers
                 </span>
-                <Badge variant="outline">
-                  {stats?.period_month
-                    ? new Date(2024, stats.period_month - 1).toLocaleString(
-                        "default",
-                        { month: "long" },
-                      )
-                    : `Year ${stats?.period_year}`}
+                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                  {period === "current_month"
+                    ? `Current Month - ${new Date().toLocaleString("default", {
+                        month: "short",
+                        year: "numeric",
+                      })}`
+                    : period === "previous_month"
+                      ? `Previous Month - ${new Date(
+                          new Date().getFullYear(),
+                          new Date().getMonth() === 0
+                            ? 11
+                            : new Date().getMonth() - 1,
+                        ).toLocaleString("default", {
+                          month: "short",
+                          year: "numeric",
+                        })}`
+                      : period === "this_year"
+                        ? `Year ${selectedYear}`
+                        : `Custom - ${
+                            selectedMonth
+                              ? `${new Date(2024, selectedMonth - 1).toLocaleString(
+                                  "default",
+                                  { month: "short" },
+                                )} ${selectedYear}`
+                              : selectedYear
+                          }`}
                 </Badge>
               </CardTitle>
             </CardHeader>

@@ -36,7 +36,7 @@ const InternalReviewsPage = () => {
   const [monthlyFinals, setMonthlyFinals] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("internal");
+  const [activeTab, setActiveTab] = useState("finals");
   const [filters, setFilters] = useState({
     employee_id: null,
     month: null,

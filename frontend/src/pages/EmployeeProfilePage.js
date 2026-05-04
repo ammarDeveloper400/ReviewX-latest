@@ -219,7 +219,7 @@ const EmployeeProfilePage = () => {
             <TabsList>
               <TabsTrigger value="reviews" data-testid="reviews-tab">
                 <FileText className="w-4 h-4 mr-2" />
-                Reviews
+                Final Monthly Reviews
               </TabsTrigger>
               {user?.role !== 'Employee' && (
                 <TabsTrigger value="notes" data-testid="notes-tab">
@@ -232,7 +232,7 @@ const EmployeeProfilePage = () => {
             <TabsContent value="reviews">
               <Card>
                 <CardHeader>
-                  <CardTitle>Review History</CardTitle>
+                  <CardTitle>Final Monthly Review History</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -259,15 +259,16 @@ const EmployeeProfilePage = () => {
                           </div>
                         </div>
                         <div className="bg-slate-50 rounded-lg p-3 mb-3">
-                          <p className="text-sm text-slate-600 font-medium mb-1">Monthly Final Score</p>
+                          <p className="text-sm text-slate-600 font-medium mb-1">Final Monthly Score</p>
                           <p className="text-sm text-slate-700">
-                            This is an aggregated score from {Object.keys(review.final_category_averages || {}).length} internal reviews.
+                            Final review score for {new Date(review.review_cycle_year, review.review_cycle_month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}.
                           </p>
                         </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 mb-4">
-                          {Object.entries(review.final_category_averages || {}).map(([catId, rating], idx) => {
+                          {Object.entries(review.final_category_ratings || {}).map(([catId, ratingData], idx) => {
                             const category = categories.find(c => c.id === catId);
+                            const rating = typeof ratingData === 'object' ? ratingData.rating : ratingData;
                             return (
                               <div key={catId} className="text-center p-2 bg-white rounded border border-slate-200">
                                 <p className="text-xs text-slate-500 mb-1">{category?.title || `Category ${idx + 1}`}</p>
@@ -291,7 +292,7 @@ const EmployeeProfilePage = () => {
                     ))}
                     {(!performance?.monthly_finals || performance.monthly_finals.length === 0) && (
                       <div className="text-center py-12 text-slate-500">
-                        No reviews yet
+                        No final monthly reviews yet
                       </div>
                     )}
                   </div>
