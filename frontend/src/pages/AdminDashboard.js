@@ -266,11 +266,11 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-4xl font-bold text-green-600">
-                  ${(stats?.total_bonus_payable || 0).toLocaleString()}
+                  PKR {(stats?.total_bonus_payable || 0).toLocaleString()}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge className="bg-amber-50 text-amber-700">
-                    {stats?.unpaid_bonuses_count || 0} Unpaid
+                    {stats?.unpaid_bonuses_count || 0} Pending
                   </Badge>
                   <Badge className="bg-emerald-50 text-emerald-700">
                     {stats?.paid_bonuses_count || 0} Paid

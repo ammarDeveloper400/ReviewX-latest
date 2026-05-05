@@ -132,7 +132,7 @@ const EmployeesPage = () => {
     try {
       const payload = {
         ...formData,
-        joining_date: new Date(formData.joining_date).toISOString(),
+        joining_date: formData.joining_date,
         base_salary: formData.base_salary
           ? parseFloat(formData.base_salary)
           : null,

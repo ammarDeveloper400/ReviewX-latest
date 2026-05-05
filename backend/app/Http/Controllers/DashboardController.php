@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnnualBonusPayable;
 use App\Models\Employee;
 use App\Models\InternalReview;
 use App\Models\MonthlyFinalReview;
-use App\Models\SalaryPayment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -129,18 +129,18 @@ class DashboardController extends Controller
             }
         }
 
-        $salaryQuery = SalaryPayment::query();
+        $bonusPayablesQuery = AnnualBonusPayable::query();
         if ($year !== null) {
-            $salaryQuery->where('year', $year);
+            $bonusPayablesQuery->whereYear('period_end', $year);
         }
         if ($month !== null) {
-            $salaryQuery->where('month', $month);
+            $bonusPayablesQuery->whereMonth('period_end', $month);
         }
-        $salaryPayments = $salaryQuery->get();
+        $bonusPayables = $bonusPayablesQuery->get();
 
-        $totalBonusPayable = $salaryPayments->sum('bonus_amount');
-        $unpaidCount = $salaryPayments->where('payment_status', 'Unpaid')->count();
-        $paidCount = $salaryPayments->where('payment_status', 'Paid')->count();
+        $totalBonusPayable = $bonusPayables->sum('bonus_amount');
+        $unpaidCount = $bonusPayables->where('status', 'Pending')->count();
+        $paidCount = $bonusPayables->where('status', 'Paid')->count();
 
         return response()->json([
             'total_employees' => $totalEmployees,

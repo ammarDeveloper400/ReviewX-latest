@@ -134,6 +134,7 @@ class EmployeeController extends Controller
             'phone' => 'nullable|string|max:50',
             'role_type' => 'nullable|in:Dev,QA,UI/UX,PM',
             'department' => 'nullable|string|max:255',
+            'joining_date' => 'nullable|date',
             'status' => 'nullable|in:Active,Inactive,Termination Recommended,Terminated',
             'base_salary' => 'nullable|numeric|min:0',
         ]);
@@ -141,7 +142,7 @@ class EmployeeController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
 
         $employee->update($request->only([
-            'full_name', 'email', 'phone', 'role_type', 'department', 'status', 'base_salary'
+            'full_name', 'email', 'phone', 'role_type', 'department', 'joining_date', 'status', 'base_salary'
         ]));
 
         AuditLog::log($user->id, 'UPDATE', 'employee', $employee_id, $request->all());
@@ -150,6 +151,19 @@ class EmployeeController extends Controller
     }
 
     public function destroy(string $employee_id)
+    // {
+    //     $employee = Employee::find($employee_id);
+    //     if (!$employee) {
+    //         return response()->json(['detail' => 'Employee not found'], 404);
+    //     }
+
+    //     $user = JWTAuth::parseToken()->authenticate();
+
+    //     $employee->delete();
+    //     AuditLog::log($user->id, 'DELETE', 'employee', $employee_id);
+
+    //     return response()->json(['message' => 'Employee deleted successfully']);
+    // }
     {
         $employee = Employee::find($employee_id);
         if (!$employee) {
@@ -158,10 +172,24 @@ class EmployeeController extends Controller
 
         $user = JWTAuth::parseToken()->authenticate();
 
-        $employee->delete();
-        AuditLog::log($user->id, 'DELETE', 'employee', $employee_id);
+        $employeeName = $employee->full_name;
+        $linkedUser = User::where('linked_employee_id', $employee_id)->first();
+        $linkedUserId = $linkedUser?->id;
+        $linkedUserEmail = $linkedUser?->email;
 
-        return response()->json(['message' => 'Employee deleted successfully']);
+        // Delete employee (this will cascade delete the linked user account)
+        $employee->delete();
+        
+        AuditLog::log($user->id, 'DELETE', 'employee', $employee_id, [
+            'employee_name' => $employeeName,
+            'linked_user_id' => $linkedUserId,
+            'linked_user_email' => $linkedUserEmail,
+        ]);
+
+        return response()->json([
+            'message' => 'Employee deleted successfully',
+            'linked_user_deleted' => $linkedUserId !== null,
+        ]);
     }
 
     public function toggleStatus(Request $request, string $employee_id)
